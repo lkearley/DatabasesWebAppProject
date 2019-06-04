@@ -1,3 +1,2 @@
-# CS 4400 Team 23 Project Website
-
- https://github.gatech.edu/pages/lkearley3/cs4400team23/
+# Atlanta Farms, Gardens, and Orchards
+A website created for a group project which allows owners to manage their properties and visitors to log property visits and give ratings
