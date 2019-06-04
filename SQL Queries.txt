@@ -1,0 +1,469 @@
+﻿CREATE TABLE User(
+	Username varchar(50),
+	Email varchar(50) NOT NULL,
+	Password char(32) NOT NULL, 
+	UserType enum('ADMIN', 'OWNER', 'VISITOR') NOT NULL,
+	PRIMARY KEY(Username),
+	UNIQUE(Email)
+) ENGINE = InnoDB;
+
+CREATE TABLE Property(
+	ID int CHECK (ID < 100000), 
+	Name varchar(255) NOT NULL,
+	Size float NOT NULL,
+	IsCommercial boolean NOT NULL,
+	IsPublic boolean NOT NULL,
+	Street varchar(255) NOT NULL,
+	City varchar(100) NOT NULL,
+	Zip int NOT NULL,
+	PropertyType enum('FARM', 'GARDEN', 'ORCHARD') NOT NULL,
+	Owner varchar(50) NOT NULL,
+	ApprovedBy varchar(50),
+	PRIMARY KEY(ID),
+	UNIQUE(Name),
+	FOREIGN KEY (Owner) REFERENCES User(Username)
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY(ApprovedBy) REFERENCES User(Username)
+		ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE Visit(
+	Username varchar(50),
+	PropertyID int,
+	VisitDate timestamp NOT NULL,
+	Rating int NOT NULL CHECK (Rating >= 1 AND Raing <= 5),
+	CONSTRAINT Pk_Visit PRIMARY KEY (Username, PropertyID),
+	FOREIGN KEY (Username) REFERENCES User(Username) 
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (PropertyID) REFERENCES Property(ID) 
+		ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE FarmItem(
+	Name varchar(100),
+	IsApproved boolean NOT NULL,
+	Type enum('ANIMAL', 'FRUIT', 'FLOWER', 'VEGETABLE', 'NUT') NOT NULL,
+	PRIMARY KEY(Name)
+) ENGINE = InnoDB;
+
+CREATE TABLE Has(
+	PropertyID int,
+	ItemName varchar(100),
+	CONSTRAINT Pk_Has PRIMARY KEY(PropertyID, ItemName),
+	FOREIGN KEY (PropertyID) REFERENCES Property(ID) 
+		ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (ItemName) REFERENCES FarmItem(Name) 
+		ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+
+1. General functionality
+Login
+cur.execute('SELECT Username, UserType, Password, Email '
+                            'FROM User '
+                            'WHERE Email=%s', [email])
+
+New visitor registration
+cur.execute('SELECT Username '
+                            'FROM User '
+                            'WHERE username=%s', [username])
+                matchingUsername = cur.fetchone()
+cur.execute('SELECT Email '
+                            'FROM User '
+                            'WHERE email=%s', [email])
+                matchingEmail = cur.fetchone()
+cur.execute('INSERT INTO User (Username, Email, Password, UserType) '
+                                    'VALUES (%s, %s, %s, %s)',
+                                    (newuser.username, newuser.email, newuser.password_hash, newuser.usertype))
+
+New owner registration
+cur.execute('SELECT Username '
+                            'FROM User '
+                            'WHERE username=%s', [username])
+                matchingUsername = cur.fetchone()
+cur.execute('SELECT Email '
+                            'FROM User '
+                            'WHERE email=%s', [email])
+                matchingEmail = cur.fetchone()
+cur.execute('INSERT INTO User (Username, Email, Password, UserType) '
+                                'VALUES (%s, %s, %s, %s)',
+                                (curUser.username, curUser.email, curUser.password_hash, curUser.usertype))
+cur.execute(
+                    'INSERT INTO Property(ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, Owner)'
+                    'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (id, propertyName, acres, commercial, public, streetAddress, city, zip, propertyType, owner))
+
+2. Owner functionality
+View own properties
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE (Visits, 0), COALESCE(Rating, 0) '
+                'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy '
+                'FROM Property) AS Props LEFT OUTER JOIN (SELECT PropertyID, COUNT(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS Ratings ON ID = PropertyID '
+                'WHERE Owner = %s '
+                'ORDER BY Name', [curUser.username])
+
+Sort own properties
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE (Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy '
+                    'FROM Property) AS Props LEFT OUTER JOIN (SELECT PropertyID, COUNT(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS Ratings ON ID = PropertyID '
+                    'WHERE Owner = %s AND ' + ownerPropertySearchType + ' LIKE %s '
+                    'ORDER BY ' + ownerPropertyCurrentSort, [curUser.username, searchText])
+OR
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE (Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy '
+                    'FROM Property) AS Props LEFT OUTER JOIN (SELECT PropertyID, COUNT(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS Ratings ON ID = PropertyID '
+                    'WHERE Owner = %s AND ' + ownerPropertySearchType + ' BETWEEN %s AND %s '
+                    'ORDER BY ' + ownerPropertyCurrentSort, [curUser.username, minVal, maxVal])
+
+Search own properties
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE (Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy '
+                    'FROM Property) AS Props LEFT OUTER JOIN (SELECT PropertyID, COUNT(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS Ratings ON ID = PropertyID '
+                    'WHERE Owner = %s AND ' + ownerPropertySearchType + ' LIKE %s '
+                    'ORDER BY ' + ownerPropertyCurrentSort, [curUser.username, searchText])
+OR
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE (Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy '
+                    'FROM Property) AS Props LEFT OUTER JOIN (SELECT PropertyID, COUNT(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS Ratings ON ID = PropertyID '
+                    'WHERE Owner = %s AND ' + ownerPropertySearchType + ' BETWEEN %s AND %s '
+                    'ORDER BY ' + ownerPropertyCurrentSort, [curUser.username, minVal, maxVal])
+
+View other owners’ properties
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+                'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy, COUNT(V.PropertyID) AS Visits, AVG(V.Rating) AS Rating FROM Property P LEFT JOIN Visit V ON P.ID = V.PropertyID GROUP BY V.PropertyID) AS T '
+                'WHERE Owner != %s AND ApprovedBy IS NOT NULL '
+                'ORDER BY Name', [curUser.username])
+
+Sort other properties
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy, COUNT(V.PropertyID) AS Visits, AVG(V.Rating) AS Rating FROM Property P LEFT JOIN Visit V ON P.ID = V.PropertyID GROUP BY V.PropertyID) AS T '
+                    'WHERE Owner != %s AND ApprovedBy IS NOT NULL AND ' + ownerOtherPropertySearchType + ' LIKE %s '
+                    'ORDER BY ' + ownerOtherPropertyCurrentSort, [curUser.username, searchText])
+OR
+cur.execute(
+            'SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+            'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy, COUNT(V.PropertyID) AS Visits, AVG(V.Rating) AS Rating FROM Property P LEFT JOIN Visit V ON P.ID = V.PropertyID GROUP BY V.PropertyID) AS T '
+            'WHERE Owner != %s AND ApprovedBy IS NOT NULL AND ' + ownerOtherPropertySearchType + ' BETWEEN %s AND %s '
+            'ORDER BY ' + ownerOtherPropertyCurrentSort, [curUser.username, minVal, maxVal])
+
+Search other properties
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy, COUNT(V.PropertyID) AS Visits, AVG(V.Rating) AS Rating FROM Property P LEFT JOIN Visit V ON P.ID = V.PropertyID GROUP BY V.PropertyID) AS T '
+                    'WHERE Owner != %s AND ApprovedBy IS NOT NULL AND ' + ownerOtherPropertySearchType + ' LIKE %s '
+                    'ORDER BY ' + ownerOtherPropertyCurrentSort, [curUser.username, searchText])
+OR
+cur.execute(
+            'SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+            'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy, COUNT(V.PropertyID) AS Visits, AVG(V.Rating) AS Rating FROM Property P LEFT JOIN Visit V ON P.ID = V.PropertyID GROUP BY V.PropertyID) AS T '
+            'WHERE Owner != %s AND ApprovedBy IS NOT NULL AND ' + ownerOtherPropertySearchType + ' BETWEEN %s AND %s '
+            'ORDER BY ' + ownerOtherPropertyCurrentSort, [curUser.username, minVal, maxVal])
+
+Add a new property
+cur.execute('SELECT Name FROM Property')
+cur.execute('SELECT MAX(ID) FROM Property')
+cur.execute(
+                    'INSERT INTO Property(ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, Owner)'
+                    'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    (id, propertyName, acres, commercial, public, streetAddress, city, zip, propertyType, owner))
+cur.execute('INSERT INTO Has(PropertyID, ItemName) VALUES(%s, %s)', (id, item1))
+cur.execute('INSERT INTO Has(PropertyID, ItemName) VALUES(%s, %s)', (id, item2))
+
+Manage a property, display current info
+cur.execute('SELECT ItemName FROM Has WHERE PropertyID=%s', [id])
+
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType,'
+                'IsPublic, IsCommercial, ID, ApprovedBy FROM Property WHERE ID=%s', [id])
+
+Modify property name (name must remain unique to the system)
+cur.execute('SELECT Name FROM Property')
+cur.execute(
+   'UPDATE Property SET Name=%s WHERE ID=%s', [propertyName, id])
+
+
+Modify property size, iscommercial, ispublic, street, city, zip 
+cur.execute(
+                'UPDATE Property SET Size=%s, IsCommercial=%s,'
+                'IsPublic=%s, Street=%s, City=%s, Zip=%s WHERE ID=%s',
+                [acres, commercial, public, streetAddress, city, zip, id])
+
+Add a new animal/crop to the property from the approved list
+cur.execute('SELECT Name FROM FarmItem WHERE IsApproved=1 '
+           'AND Name NOT IN (SELECT ItemName FROM Has WHERE PropertyID=%s)', [id])
+cur.execute('INSERT INTO Has(PropertyID, ItemName) VALUES(%s, %s)', (id, item1))
+cur.execute('INSERT INTO Has(PropertyID, ItemName) VALUES(%s, %s)', (id, item2))
+
+Request to add an animal/crop to the approved list
+cur.execute('INSERT INTO FarmItem(Name, Type) VALUES(%s, %s)', (requestName, requestType))
+
+Remove an existing animal/crop (unless it’s the last one listed)
+cur.execute('SELECT Type FROM FarmItem WHERE Name=%s', [item])
+cur.execute('DELETE FROM Has WHERE PropertyID=%s AND ItemName=%s', [id, deleteName])
+
+Reset visits to 0 and approvedby to null if changes are made
+cur.execute('SELECT Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType FROM Property WHERE ID=%s', [id])
+cur.execute('SELECT * FROM Has WHERE PropertyID=%s', [id])
+cur.execute('DELETE FROM Visit WHERE PropertyID = %s', [id])
+cur.execute('UPDATE Property SET ApprovedBy=NULL WHERE ID=%s', [id])
+
+Remove the property entirely
+cur.execute('DELETE FROM Property WHERE ID=%s', [id])
+
+3. Administrator functionality
+View list of all visitors
+cur.execute('SELECT Username, Email, COALESCE(Visits, 0) AS "Logged Visits" '
+           'FROM (SELECT Username, Email FROM User WHERE UserType = "VISITOR") '
+               'AS Visitors LEFT OUTER JOIN (SELECT Username AS U2, COUNT(Username) AS Visits '
+               'FROM Visit '
+               'GROUP BY Username) AS Visits ON Username = U2 '
+           'ORDER BY Username ASC')
+
+Sort visitor list
+cur.execute('SELECT Username, Email, COALESCE(Visits, 0) AS "Logged Visits" '
+           'FROM (SELECT Username, Email FROM User WHERE UserType = "VISITOR") '
+           'AS Visitors LEFT OUTER JOIN (SELECT Username AS U2, COUNT(Username) AS Visits FROM Visit '
+           'GROUP BY Username) AS Visits ON Username = U2 '
+           'WHERE ' + adminVisitorSearchType + ' LIKE %s '
+           'ORDER BY ' + adminVisitorCurrentSort, [searchText])
+
+cur.execute('SELECT Username, Email, COALESCE(Visits, 0) AS "Logged Visits" '
+           'FROM ((SELECT Username, Email FROM User WHERE UserType = "VISITOR") '
+           'AS Visitors LEFT OUTER JOIN (SELECT Username AS U2, COUNT(Username) AS Visits FROM Visit '
+           'GROUP BY Username) AS Visits ON Username = U2) '
+           'WHERE COALESCE(Visits, 0) BETWEEN %s AND %s '
+           'ORDER BY ' + adminVisitorCurrentSort, [minVisits, maxVisits])
+
+Search visitor list
+cur.execute('SELECT Username, Email, COALESCE(Visits, 0) AS "Logged Visits" '
+           'FROM (SELECT Username, Email FROM User WHERE UserType = "VISITOR") '
+               'AS Visitors LEFT OUTER JOIN (SELECT Username AS U2, COUNT(Username) AS Visits FROM Visit '
+               'GROUP BY Username) AS Visits ON Username = U2 '
+           'WHERE ' + adminVisitorSearchType + ' LIKE %s '
+           'ORDER BY ' + adminVisitorCurrentSort, [searchText])
+
+cur.execute('SELECT Username, Email, COALESCE(Visits, 0) AS "Logged Visits" '
+           'FROM ((SELECT Username, Email FROM User WHERE UserType = "VISITOR") '
+               'AS Visitors LEFT OUTER JOIN (SELECT Username AS U2, COUNT(Username) AS Visits FROM Visit '
+               'GROUP BY Username) AS Visits ON Username = U2) '
+           'WHERE COALESCE(Visits, 0) >= %s AND COALESCE(Visits, 0) <= %s '
+           'ORDER BY ' + adminVisitorCurrentSort, [minVisits, maxVisits])
+
+Delete a visitor’s visit history log
+cur.execute('DELETE FROM Visit WHERE Username = %s', [visitorUsername])
+
+Delete any visitor account and all information tied to it
+cur.execute('DELETE FROM User WHERE Username = %s', [visitorUsername])
+
+View a list of all owners
+cur.execute('SELECT Username, Email, COALESCE(Properties, 0) AS "Number of Properties" '
+                'FROM (SELECT Username, Email FROM User WHERE UserType = "OWNER") '
+                    'AS Owners LEFT OUTER JOIN (SELECT p.Owner AS U2, COUNT(Owner) AS Properties FROM Property p '
+                    'GROUP BY p.Owner) AS TotalProperties ON Username = U2 '
+                'ORDER BY Username')
+
+Sort owner list
+cur.execute('SELECT Username, Email, COALESCE(Properties, 0) AS "Number of Properties" '
+           'FROM (SELECT Username, Email FROM User WHERE UserType = "OWNER") '
+           'AS Owners LEFT OUTER JOIN (SELECT p.Owner AS U2, COUNT(Owner) AS Properties FROM Property p '
+           'GROUP BY p.Owner) AS TotalProperties ON Username = U2 '
+           'WHERE ' + adminOwnerSearchType + ' LIKE %s '
+           'ORDER BY ' + adminOwnerCurrentSort, [searchText])
+
+cur.execute('SELECT Username, Email, COALESCE(Properties, 0) AS "Number of Properties" '
+           'FROM ((SELECT Username, Email FROM User WHERE UserType = "OWNER") '
+           'AS Owners LEFT OUTER JOIN (SELECT p.Owner AS U2, COUNT(Owner) AS Properties FROM Property p '
+           'GROUP BY p.Owner) AS TotalProperties ON Username = U2) '
+           'WHERE COALESCE(Properties, 0) BETWEEN %s AND %s '
+           'ORDER BY ' + adminOwnerCurrentSort, [minProperties, maxProperties])
+
+Search owner list
+cur.execute('SELECT Username, Email, COALESCE(Properties, 0) AS "Number of Properties" '
+           'FROM (SELECT Username, Email FROM User WHERE UserType = "OWNER") '
+           'AS Owners LEFT OUTER JOIN (SELECT p.Owner AS U2, COUNT(Owner) AS Properties FROM Property p '
+           'GROUP BY p.Owner) AS TotalProperties ON Username = U2 '
+           'WHERE ' + adminOwnerSearchType + ' LIKE %s '
+           'ORDER BY ' + adminOwnerCurrentSort, [searchText])
+
+cur.execute('SELECT Username, Email, COALESCE(Properties, 0) AS "Number of Properties" '
+           'FROM ((SELECT Username, Email FROM User WHERE UserType = "OWNER") '
+           'AS Owners LEFT OUTER JOIN (SELECT p.Owner AS U2, COUNT(Owner) AS Properties FROM Property p '
+           'GROUP BY p.Owner) AS TotalProperties ON Username = U2) '
+           'WHERE COALESCE(Properties, 0) BETWEEN %s AND %s '
+           'ORDER BY ' + adminOwnerCurrentSort, [minProperties, maxProperties])
+
+Delete owner account
+cur.execute('DELETE FROM User WHERE Username = %s', [ownerUsername])
+
+View all confirmed properties
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, ApprovedBy, COALESCE(Average, 0) '
+                'FROM ((SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS P LEFT OUTER JOIN (SELECT PropertyID, AVG(Rating) AS Average FROM Visit GROUP BY PropertyID) AS A ON ID=PropertyID) '
+                'WHERE ApprovedBy IS NOT NULL '
+                'ORDER BY Name')
+
+Sort/search confirmed properties
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, ApprovedBy, COALESCE(Average, 0) '
+                    'FROM ((SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS P LEFT OUTER JOIN (SELECT PropertyID, AVG(Rating) AS Average FROM Visit GROUP BY PropertyID) AS A ON ID=PropertyID) '
+                    'WHERE ApprovedBy IS NOT NULL AND ' + adminConfirmedSearchType + ' LIKE %s '
+                    'ORDER BY ' + adminConfirmedCurrentSort, [searchText])
+OR
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, ApprovedBy, COALESCE(Average, 0) '
+                    'FROM ((SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS P LEFT OUTER JOIN (SELECT PropertyID, AVG(Rating) AS Average FROM Visit GROUP BY PropertyID) AS A ON ID=PropertyID) '
+                    'WHERE ApprovedBy IS NOT NULL AND Zip=%s '
+                    'ORDER BY ' + adminConfirmedCurrentSort, [adminConfirmedSearchText])
+
+OR
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, ApprovedBy, COALESCE(Average, 0) '
+                    'FROM ((SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS P LEFT OUTER JOIN (SELECT PropertyID, AVG(Rating) AS Average FROM Visit GROUP BY PropertyID) AS A ON ID=PropertyID) '
+                    'WHERE ApprovedBy IS NOT NULL AND Average Between %s AND %s '
+                    'ORDER BY ' + adminConfirmedCurrentSort, [minRating, maxRating])
+
+View all unconfirmed properties
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, Owner '
+                'FROM Property '
+                'WHERE ApprovedBy IS NULL '
+                'ORDER BY Name')
+
+Sort unconfirmed properties
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, Owner '
+           'FROM Property '
+           'WHERE ApprovedBy IS NULL AND ' + adminUnconfirmedSearchType + ' LIKE %s '
+           'ORDER BY ' + adminUnconfirmedCurrentSort, [searchText])
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, Owner '
+           'FROM Property '
+           'WHERE ApprovedBy IS NULL AND Size BETWEEN %s AND %s '
+           'ORDER BY ' + adminUnconfirmedCurrentSort, [minSize, maxSize])
+
+Search unconfirmed properties
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, Owner '
+           'FROM Property '
+           'WHERE ' + adminUnconfirmedSearchType + ' LIKE %s AND ApprovedBy IS NULL '
+           'ORDER BY ' + adminUnconfirmedCurrentSort, [searchText])
+
+cur.execute('SELECT Name, Street, City, Zip, Size, PropertyType, IsPublic, IsCommercial, ID, Owner '
+           'FROM Property '
+           'WHERE Size >= %s AND Size <= %s AND ApprovedBy IS NULL '
+           'ORDER BY ' + adminUnconfirmedCurrentSort, [minSize, maxSize])
+
+Manage property
+cur.execute('SELECT Name '
+                'FROM Property '
+                'WHERE ID != %s', [id])
+cur.execute('UPDATE Property '
+                'SET Name=%s, Size=%s, IsCommercial=%s, IsPublic=%s, Street=%s, City=%s, '
+                    'Zip=%s, ApprovedBy=%s '
+                'WHERE ID=%s', [name, size, isCommercial, isPublic, street, city, zip, curUser.username, id])
+
+Validate a property that is invalid
+cur.execute('UPDATE Property '
+                'SET Name=%s, Size=%s, IsCommercial=%s, IsPublic=%s, Street=%s, City=%s, '
+                    'Zip=%s, ApprovedBy=%s '
+                'WHERE ID=%s', [name, size, isCommercial, isPublic, street, city, zip, curUser.username, id])
+
+Delete property
+cur.execute('DELETE FROM Property '
+                'WHERE Name = %s OR ID = %s', [propertyInfo, propertyInfo])
+
+View all approved animals/crops
+cur.execute('SELECT Name, Type '
+                'FROM FarmItem '
+                'WHERE IsApproved = 1 '
+                'ORDER BY Name ')
+
+Sort/Search approved animals/crops
+cur.execute('SELECT Name, Type '
+                'FROM FarmItem '
+                'WHERE IsApproved = 1 AND ' + adminApprovedSearchType + ' LIKE %s '
+                'ORDER BY ' + adminApprovedCurrentSort, [searchText])
+
+Add new animals/crops to the approved animal/crop list
+cur.execute('INSERT INTO FarmItem () '
+                        'VALUES(%s, 1, %s)', [organismName, organismType])
+
+View all pending animals/crops
+cur.execute('SELECT Name, Type '
+                'FROM FarmItem '
+                'WHERE IsApproved = 0 '
+                'ORDER BY Name')
+
+Sort/Search pending animals/crops
+cur.execute('SELECT Name, Type '
+                'FROM FarmItem '
+                'WHERE IsApproved = 0 AND ' + adminPendingSearchType + ' LIKE %s '
+                'ORDER BY ' + adminPendingCurrentSort, [searchText])
+
+Approve animal/crop
+cur.execute('UPDATE FarmItem '
+                    'SET IsApproved = 1 '
+                    'WHERE Name = %s', [organismName])
+
+Delete animal/crop
+cur.execute('DELETE FROM FarmItem '
+                    'WHERE Name = %s', [organismName])
+
+4. Visitor functionality
+Visitor Home
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, COUNT(V.PropertyID), AVG(V.Rating) FROM Property P JOIN Visit V ON P.ID = V.PropertyID AND P.ApprovedBy IS NOT NULL GROUP BY V.PropertyID')
+
+The table should be sortable/searchable by various columns/attributes
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS P LEFT OUTER JOIN (SELECT PropertyID, Count(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS V ON ID = PropertyID '
+                    'WHERE ' + visitorPropertySearchType + ' LIKE %s '
+                    'ORDER BY ' + visitorPropertyCurrentSort, [searchText])
+OR
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, COALESCE(Visits, 0), COALESCE(Rating, 0) '
+                    'FROM (SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS P LEFT OUTER JOIN (SELECT PropertyID, Count(PropertyID) AS Visits, AVG(Rating) AS Rating FROM Visit GROUP BY PropertyID) AS V ON ID = PropertyID '
+                    'WHERE ' + visitorPropertySearchType + ' BETWEEN %s AND %s '
+                    'ORDER BY ' + visitorPropertyCurrentSort, [minVal, maxVal])
+
+
+The visitor should be able to select a particular property to view its details.
+cur.execute('SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, PropertyType, ApprovedBy, Visits, Rating, Owner, PropertyType '
+        'FROM (SELECT ID, Name, Size, IsCommercial, IsPublic, Street, City, Zip, Owner, PropertyType, ApprovedBy, COUNT(V.PropertyID) AS Visits, AVG(V.Rating) AS Rating FROM Property P LEFT JOIN Visit V ON P.ID = V.PropertyID GROUP BY V.PropertyID) AS T '
+        'WHERE ID = %s', [propertyID])
+    propertyInfo = cur.fetchone()
+    cur.execute('SELECT Email '
+                'FROM User '
+                'WHERE Username = %s', [propertyInfo[12]])
+    ownerEmail = cur.fetchone()
+    cur.execute('SELECT ItemName '
+                'FROM Has '
+                'WHERE PropertyID = %s', [propertyID])
+    propertyOrganisms = cur.fetchall()
+    cur.execute('SELECT Rating '
+                'FROM Visit '
+                'WHERE Username = %s AND PropertyID = %s', [curUser.username, propertyID])
+
+From this detailed view, the visitor can log their visit (or un-log their visit if it was
+previously logged)
+cur.execute('INSERT INTO Visit '
+                'VALUES(%s, %s, %s, %s)', [curUser.username, propertyID, currentDate, rating])
+
+cur.execute('DELETE FROM Visit '
+                'WHERE Username = %s AND PropertyID = %s', [curUser.username, propertyID])
+
+
+If an admin or owner modifies a property’s attributes, the number of visitors to
+the property should be reset to 0
+cur.execute('DELETE FROM Visit '
+                    'WHERE PropertyID = %s', [id])
+
+
+
+
+Visitors should have the ability to view a history of all of the properties that they
+have visited
+cur.execute('SELECT Name, VisitDate, Rating, ID '
+                'FROM (SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS Property JOIN (SELECT PropertyID, VisitDate, Rating '
+                'FROM Visit WHERE Username = %s) AS Visit ON ID = PropertyID', [curUser.username])
+
+Visited Properties sort/search
+cur.execute('SELECT Name, VisitDate, Rating, ID '
+                    'FROM (SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS Property JOIN (SELECT PropertyID, VisitDate, Rating '
+                    'FROM Visit WHERE Username = %s) AS Visit ON ID = PropertyID '
+                    'WHERE ' + visitedPropertySearchType + ' LIKE %s '
+                    'ORDER BY ' + visitedPropertyCurrentSort, [curUser.username, searchText])
+
+cur.execute('SELECT Name, VisitDate, Rating, ID '
+                    'FROM (SELECT * FROM Property WHERE ApprovedBy IS NOT NULL) AS Property JOIN (SELECT PropertyID, VisitDate, Rating '
+                    'FROM Visit WHERE Username = %s) AS Visit ON ID = PropertyID '
+                    'WHERE ' + visitedPropertySearchType + ' BETWEEN %s and %s '
+                                                           'ORDER BY ' + visitedPropertyCurrentSort,
+                    [curUser.username, minVal, maxVal])

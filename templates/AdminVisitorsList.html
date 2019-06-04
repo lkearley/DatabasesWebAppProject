@@ -1,0 +1,66 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Visitors List{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Visitors List </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h1 align="center" style="margin-top:100px;">All Visitors in the System</h1>
+    <table border="1" id="admin-visitor-list">
+        <th >Username <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortVisitorsASC', Param="Username" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortVisitorsDESC', Param="Username" ) }}';">▼</button></th>
+        <th >Email <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortVisitorsASC', Param="Email" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortVisitorsDESC', Param="Email" ) }}';">▼</button></th>
+        <th >Logged Visits <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortVisitorsASC', Param="COALESCE(Visits, 0)" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortVisitorsDESC', Param="COALESCE(Visits, 0)" ) }}';">▼</button></th>
+        {% for row in data %}
+            <tr>
+                <td width="25%" align="center">{{row[0]}}</td>
+                <td width="25%" align="center">{{row[1]}}</td>
+                <td width="25%" align="center">{{row[2]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="adminContainer">
+        <form class="adminForms" method="POST" action="/searchVisitorsAdminVisitorList/">
+            <select name="search_by">
+                <option value="Username">Username</option>
+                <option value="Email">Email</option>
+                <option value="Visits">Visits</option>
+            </select>
+                <input type="text" name="search_text">
+            <button class="btn">Search Visitors</button>
+        </form>
+        <form class="adminForms" method="POST" action="/deleteVisitor/">
+            <select name="visitor_to_delete">
+                {% for visitor in data %}
+                    <option value="{{ visitor[0] }}">{{ visitor[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Delete Visitor</button>
+        </form>
+        <form class="adminForms" method="POST" action="/deleteVisitorVisits/">
+            <select name="visitor_visits_to_delete">
+                {% for visitor in data %}
+                    <option value="{{ visitor[0] }}">{{ visitor[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Delete Visitor's Visit History</button>
+        </form>
+        <form class="adminForms" action="/admin/">
+            <button class="btn">Back</button>
+        </form>
+    </div>
+{% endblock %}

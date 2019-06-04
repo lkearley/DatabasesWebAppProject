@@ -1,0 +1,243 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Manage {{ form.propertyName.description }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage {{ form.propertyName.description }}</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {{ super() }}
+
+    <form action="" method="post">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Manage {{ form.propertyName.description }}</h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Current attributes</h3>
+            </div>
+            <div class="col-md-4">
+                <h3>New attributes</h3>
+            </div>
+            <div class="col-md-4">
+                <h3>Add new items</h3>
+            </div>
+        </div>
+
+        <div class="row">
+                {{ form.hidden_tag() }}
+
+                <div class="col-md-1 text-right" style="font-weight:bold">
+                    ID<br>
+                    Name<br>
+                    Street<br>
+                    City<br>
+                    Zip<br>
+                    Size<br>
+                    Public<br>
+                    Comm<br>
+                    Type<br>
+                    Items
+                </div>
+                <div class="col-md-3">
+                    0000{{ id }}<br>
+                    {{ form.propertyName.description }}<br>
+                    {{ form.streetAddress.description }}<br>
+                    {{ form.city.description }}<br>
+                    {{ form.zip.description }}<br>
+                    {{ form.acres.description }}<br>
+                    {{ form.public.description }}<br>
+                    {{ form.commercial.description }}<br>
+                    <!--The following line allows the property type to be passed to scripts-->
+                    <input id="propertyType", value="{{ propertyType }}">
+                    {{ propertyType }}<br>
+                    {% for i in range(currItems|length - 1) %}
+                        {{ currItems[i] }},
+                    {% endfor %}
+                    {{ currItems[currItems|length - 1] }}
+                </div>
+
+                <div class="col-md-1 text-right" style="font-weight:bold">
+                    {{ form.propertyName.label }}<br>
+                    {{ form.streetAddress.label }}<br>
+                    {{ form.city.label }}<br>
+                    {{ form.zip.label }}<br>
+                    {{ form.acres.label }}<br>
+                    {{ form.public.label }}<br>
+                    {{ form.commercial.label }}<br>
+                </div>
+                <div class="col-md-3">
+                    {{ form.propertyName }}<br>
+                    {{ form.streetAddress }}<br>
+                    {{ form.city }}<br>
+                    {{ form.zip }}<br>
+                    {{ form.acres }}<br>
+                    {{ form.public }}<br>
+                    {{ form.commercial }}<br>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-3 text-right" style="font-weight:bold">
+                            <div id="animal_label">{{ form.animal.label }}</div>
+                            <div id="crop_label">{{ form.crop.label }}</div>
+                            <div id="vegetable_label">{{ form.vegetable.label }}</div>
+                            <div id="flower_label">{{ form.flower.label }}</div>
+                            <div id="fruit_label">{{ form.fruit.label }}</div>
+                            <div id="nut_label">{{ form.nut.label }}</div>
+                        </div>
+                        <div class="col-md-9">
+                            <div id="animal">{{ form.animal }}</div>
+                            <div id="crop">{{ form.crop }}</div>
+                            <div id="vegetable">{{ form.vegetable }}</div>
+                            <div id="flower">{{ form.flower }}</div>
+                            <div id="fruit">{{ form.fruit }}</div>
+                            <div id="nut">{{ form.nut }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>Request item approval</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 text-right" style="font-weight:bold">
+                            {{ form.requestName.label }}<br>
+                            {{ form.requestType.label }}
+                        </div>
+                        <div class="col-md-9">
+                            {{ form.requestName }}<br>
+                            {{ form.requestType }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>Delete item</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 text-right" style="font-weight:bold">
+                            {{ form.deleteName.label }}
+                        </div>
+                        <div class="col-md-9">
+                            {{ form.deleteName }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>Delete property</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 text-right" style="font-weight:bold">
+                            {{ form.deleteProperty.label }}
+                        </div>
+                        <div class="col-md-9">
+                            {{ form.deleteProperty }}
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                {{ wtf.form_field(form.submit) }}
+                <button type="button" class="btn btn-default" onclick="window.location.href='{{ url_for('ownerManageProperties') }}'">Back</button><br><br>
+            </div>
+        </div>
+    </div>
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        jQuery(document).ready(function() {
+            $('#propertyType').hide();
+            var propertyType = document.getElementById('propertyType').value
+            var dropdown = {
+                animal: $('#animal'),
+                crop: $('#crop'),
+                vegetable: $('#vegetable'),
+                flower: $('#flower'),
+                fruit: $('#fruit'),
+                nut: $('#nut')
+            };
+            var label = {
+                animal: $('#animal_label'),
+                crop: $('#crop_label'),
+                vegetable: $('#vegetable_label'),
+                flower: $('#flower_label'),
+                fruit: $('#fruit_label'),
+                nut: $('#nut_label')
+            };
+            switch(propertyType) {
+                case 'FARM':
+                    dropdown.animal.show();
+                    dropdown.crop.show();
+                    dropdown.vegetable.hide();
+                    dropdown.flower.hide();
+                    dropdown.fruit.hide();
+                    dropdown.nut.hide();
+                    label.animal.show();
+                    label.crop.show();
+                    label.vegetable.hide();
+                    label.flower.hide();
+                    label.fruit.hide();
+                    label.nut.hide();
+                    break;
+                case 'GARDEN':
+                    dropdown.flower.show();
+                    dropdown.vegetable.show();
+                    dropdown.animal.hide();
+                    dropdown.crop.hide();
+                    dropdown.fruit.hide();
+                    dropdown.nut.hide();
+                    label.flower.show();
+                    label.vegetable.show();
+                    label.animal.hide();
+                    label.crop.hide();
+                    label.fruit.hide();
+                    label.nut.hide();
+                    break;
+                case 'ORCHARD':
+                    dropdown.fruit.show();
+                    dropdown.nut.show();
+                    dropdown.animal.hide();
+                    dropdown.crop.hide();
+                    dropdown.vegetable.hide();
+                    dropdown.flower.hide();
+                    label.fruit.show();
+                    label.nut.show();
+                    label.animal.hide();
+                    label.crop.hide();
+                    label.vegetable.hide();
+                    label.flower.hide();
+                    break;
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "bootstrap/base.html" %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title> CS 4400 </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <span><button class="btn login" data-toggle="modal" data-target="#login_modal">Login</button></span>
+            <span><button class="btn login" data-toggle="modal" data-target="#register_modal">Register</button></span>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+
+    <div id="backg">
+    <h2 align="center" style="color:red;">{{ data }}</h2>
+    <h1> Atlanta Gardens, Farms, and Orchards </h1>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="login_modal" tabindex="-1" role="dialog" aria-labelledby="login_modal_label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form method="POST" action="">
+            {{ login_form.hidden_tag() }}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="login_modal_label">User Login</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+
+                        <div class="form-group">
+                            {{ login_form.email.label }}
+
+                            {% if login_form.email.errors %}
+                                {% for error in login_form.email.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ login_form.email }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ login_form.password.label }}
+
+                            {% if login_form.password.errors %}
+                                {% for error in login_form.password.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ login_form.password }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        {{ login_form.submit(class="btn btn-primary")}}
+{#                        <input type="submit" value="Login" class="btn btn-primary" name="login_button">#}
+                    </div>
+                </div>
+                <input type="hidden" name="form-name" value="login_form">
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="register_modal" tabindex="-1" role="dialog" aria-labelledby="register_modal_label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form method="POST" action="">
+            {{ register_form.hidden_tag() }}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="register_modal_label">User Register</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+
+                        <div class="form-group">
+                            {{ register_form.user.label }}
+
+                            {% if register_form.user.errors %}
+                                {% for error in register_form.user.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ register_form.user }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ register_form.email.label }}
+
+                            {% if register_form.email.errors %}
+                                {% for error in register_form.email.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ register_form.email }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ register_form.password.label }}
+
+                            {% if register_form.password.errors %}
+                                {% for error in register_form.password.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ register_form.password }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ register_form.confirmPassword.label }}
+
+                            {% if register_form.confirmPassword.errors %}
+                                {% for error in register_form.confirmPassword.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ register_form.confirmPassword }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ register_form.type.label }}
+
+                            {% if register_form.type.errors %}
+                                {% for error in register_form.type.errors %}
+                                    <p class="error-message">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ register_form.type }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        {{ register_form.submit(class="btn btn-primary") }}
+{#                        <input type="submit" value="Register" class="btn btn-primary" name="register_button">#}
+                    </div>
+                </div>
+                <input type="hidden" name="form-name" value="register_form">
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+

@@ -1,0 +1,58 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Owners List{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Owners List </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h1 align="center" style="margin-top:150px;">All Owners in the System</h1>
+    <table border="1" id="admin-visitor-list">
+        <th bgcolor="#A9A9A9">Username <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortOwnersASC', Param="Username" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortOwnersDESC', Param="Username" ) }}';">▼</button></th>
+        <th bgcolor="#A9A9A9">Email <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortOwnersASC', Param="Email" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortOwnersDESC', Param="Email" ) }}';">▼</button></th>
+        <th bgcolor="#A9A9A9">Number of Properties <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortOwnersASC', Param="COALESCE(Properties, 0)" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortOwnersDESC', Param="COALESCE(Properties, 0)" ) }}';">▼</button></th>
+        {% for row in data %}
+            <tr>
+                <td width="25%" align="center">{{row[0]}}</td>
+                <td width="25%" align="center">{{row[1]}}</td>
+                <td width="25%" align="center">{{row[2]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="adminContainer">
+        <form class="adminForms" method="POST" action="/searchOwnersAdminOwnerList/">
+            <select name="search_by">
+                <option value="Username">Username</option>
+                <option value="Email">Email</option>
+                <option value="Properties">Number of Properties</option>
+            </select>
+                <input type="text" name="search_text">
+            <button class="btn">Search Owners</button>
+        </form>
+        <form class="adminForms" method="POST" action="/deleteOwner/">
+            <select name="owner_to_delete">
+                {% for owner in data %}
+                    <option value="{{ owner[0] }}">{{ owner[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Delete Owner by Username</button>
+        </form>
+        <form class="adminForms" action="/admin/">
+            <button class="btn">Back</button>
+        </form>
+    </div>
+{% endblock %}

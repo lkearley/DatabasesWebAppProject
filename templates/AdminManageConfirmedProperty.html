@@ -1,0 +1,106 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Manage Property{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Manage Property </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h3 align="center" style="color:red;">{{ response }}</h3>
+    <h3 align="center" style="color:red;">{{ errorMessage }}</h3>
+    <h1 align="center" style="margin-top:100px;">Manage {{ name }}</h1>
+    <div class="adminManageContainer">
+        <form method="POST" id="mainForm" action="/saveConfirmedPropertyInfoAdmin/">
+            <div id="divLeft">
+                <label for="Name">Name:</label>
+                <input type="text" name="Name" value="{{ name }}"><br>
+                <label for="Street">Street:</label>
+                <input type = "text" name="Street" value="{{ data[1] }}"><br>
+                <label for="City">City:</label>
+                <input type = "text" name="City" value="{{ data[2] }}"><br>
+                <label for="Zip">Zip:</label>
+                <input type = "text" name="Zip" value={{ data[3] }}><br>
+                <label for="Size">Size (acres):</label>
+                <input type = "text" name="Size" value={{ data[4] }}><br>
+                <label for="ApprovedBy">Approved By:</label>
+                <input type="text" name="ApprovedBy" value="{{ data[9] }}" readonly><br>
+                <label for="Items">Property Organisms:</label>
+                <ul name="Items">
+                    {% for item in items %}
+                        <li value="{{ item }}">{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div id="divRight">
+                <label for="Type">Type:</label>
+                <input type="text" name="Type" value={{ data[5] }} readonly><br>
+                <label for="Public">Public:</label>
+                <select name="Public">
+                    {% if data[6] == 1 %}
+                        <option value="1">True</option>
+                        <option value="0">False</option>
+                    {% endif %}
+                    {% if data[6] == 0 %}
+                        <option value="0">False</option>
+                        <option value="1">True</option>
+                    {% endif %}
+                </select><br>
+                <label for="Commercial">Commercial:</label>
+                <select name="Commercial">
+                    {% if data[7] == 1 %}
+                        <option value="1">True</option>
+                        <option value="0">False</option>
+                    {% endif %}
+                    {% if data[7] == 0 %}
+                        <option value="0">False</option>
+                        <option value="1">True</option>
+                    {% endif %}
+                </select><br>
+                <label for="ID">ID:</label>
+                <input type="text" name="ID" value=0000{{ data[8] }} readonly><br>
+                <label>Average Rating: {{ data[10] }}</label>
+            </div>
+        </form>
+        <div id="divBottom">
+            <form class="adminForms" method="POST" action="/adminAddItemToConfirmedProperty/">
+                <select name="AddItem" style="width:175px;">
+                    <option value="{{ data[8] }}"></option>
+                    {% for item in approvedItems %}
+                        <option value="{{ data[8] }}-{{ item[0] }}">{{ item[0] }} ({{ item[1] }})</option>
+                    {% endfor %}
+                </select>
+                <button class="btn">Add Organism</button>
+            </form>
+            <form class="adminForms" method="POST" action="/adminDeleteItemFromConfirmedProperty/">
+                <select name="DeleteItem" style="width:175px;">
+                    <option value="{{ data[8] }}"></option>
+                    {% for item in items %}
+                        <option value="{{ data[8] }}-{{ item }}">{{ item }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn">Delete Organism</button>
+            </form>
+            <form class="adminForms" method="POST" action="/deleteConfirmedProperty/">
+                <button class="btn" value={{ data[8] }} name="confirmed_property_to_delete">Delete This Property</button>
+            </form>
+            <button class="btn adminForms" form="mainForm">Save Changes</button>
+            <form class="adminForms" action="/adminDontSaveChangesConfirmedProperty/">
+                <button class="btn">Back (Don't Save Changes)</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

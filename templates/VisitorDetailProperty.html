@@ -1,0 +1,64 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Visitor Details{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Visitor Homepage </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-static-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h1 align="center">{{ propertyInfo[1] }} Details</h1>
+    <div class="container" align="center" style="text-align: left; width: 375px">
+        <label>Name: {{ propertyInfo[1] }}</label><br>
+        <label>Owner: {{ propertyInfo[12] }}</label><br>
+        <label>Owner Email: {{ ownerEmail[0] }}</label><br>
+        <label>Visits: {{ propertyInfo[10] }}</label><br>
+        <label>Street: {{ propertyInfo[5] }}</label><br>
+        <label>City: {{ propertyInfo[6] }}</label><br>
+        <label>Zip: {{ propertyInfo[7] }}</label><br>
+        <label>Size (acres): {{ propertyInfo[2] }}</label><br>
+        <label>Avg. Rating: {{ propertyInfo[11] }}</label><br>
+        <label>Type: {{ propertyInfo[13] }}</label><br>
+        <label>Public: {{True if propertyInfo[4] else False}}</label><br>
+        <label>Commercial: {{True if propertyInfo[3] else False}}</label><br>
+        <label>ID: 0000{{ propertyInfo[0] }}</label><br>
+        <label for="organisms">Property Organisms:</label>
+        <ul name="organisms">
+            {% for organism in organisms %}
+                <li>{{ organism[0] }}</li>
+            {% endfor %}
+        </ul>
+        {% if alreadyVisited == False %}
+            <form method="POST" action="/logVisit/">
+                <label for="Rating">Rate Your Visit: </label>
+                <select name="Rating">
+                    <option value="1-{{ propertyInfo[0] }}">1</option>
+                    <option value="2-{{ propertyInfo[0] }}">2</option>
+                    <option value="3-{{ propertyInfo[0] }}">3</option>
+                    <option value="4-{{ propertyInfo[0] }}">4</option>
+                    <option value="5-{{ propertyInfo[0] }}">5</option>
+                </select>
+                <button class="btn">Log Visit</button>
+            </form>
+        {% endif %}
+        {% if alreadyVisited == True %}
+            <form method="POST" action="/visitorUnlogVisit/">
+                <button class="btn adminForms" name="propertyID" value="{{ propertyInfo[0] }}">Un-Log Visit</button>
+            </form>
+        {% endif %}
+        <span><button class="btn" style="background-color:#f7f9fb;" onclick="window.location.href='{{ url_for( 'visitor' ) }}';">Back</button></span>
+    </div>
+{% endblock %}

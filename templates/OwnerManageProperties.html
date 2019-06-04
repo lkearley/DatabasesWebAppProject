@@ -1,0 +1,31 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Manage {{ owner }} Properties{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage {{ owner }} Properties</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% endblock %}
+
+{% block navbar %}
+    {{ super() }}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {{ super() }}
+    <h1 align="center" style="margin-top:150px;">Manage {{ owner }} Properties</h1>
+    <div class="container">
+        {{ table }}
+        <button type="button" class="btn btn-default" onclick="window.location.href='{{ url_for('owner') }}'">Back</button>
+    </div>
+
+{% endblock %}

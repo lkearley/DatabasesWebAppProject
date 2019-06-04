@@ -1,0 +1,66 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Visitor Homepage{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Visitor Homepage </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-static-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<div margin-top="40px" padding-top="65px">
+    <h1 align="center">Welcome {{name}}</h1>
+</div>
+<div margin-bottom="10px">
+<table margin-top="40px" width="75%" border="0" align="center" cellpadding="5" cellspacing="0" style="border:2px solid #140012;">
+<tr style="background-color:#8fc1e3;">
+    <th style="text-align:center;">Name<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'visitedSortByASC', Param="Name" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'visitedSortByDESC', Param="Name"  ) }}';">▼</button></th>
+    <th style="text-align:center;">Log Date<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'visitedSortByASC', Param="VisitDate" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'visitedSortByDESC', Param="VisitDate"  ) }}';">▼</button></th>
+    <th style="text-align:center;">Rating<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'visitedSortByASC', Param="Rating" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'visitedSortByDESC', Param="Rating"  ) }}';">▼</button></th>
+</tr>
+    {% for row in data %}
+        <tr style="text-align:center;background-color:#f7f9fb;">
+        <td>{{row[0]}}</td>
+        <td>{{row[1]}}</td>
+        <td>{{row[2] if row[2] else 0}}</td>
+
+        </tr>
+    {% endfor %}
+</table>
+</div>
+<div align="center">
+    <form class="adminForms" method="POST" action="/searchVisitedPropertyList/">
+        <select name="searchBy">
+            <option value="Name">Name</option>
+            <option value="VisitDate">Visit Date</option>
+            <option value="Rating">Rating</option>
+        </select>
+            <input type="text" name="searchText">
+        <button class="btn" style="background-color:#f7f9fb;">Search Visited List</button>
+    </form>
+    <form method="POST" action="/visitorViewPropertyDetails/">
+        <select name="propertyID">
+            {% for row in data %}
+                <option value="{{row[3]}}">{{row[0]}}</option>
+            {% endfor %}
+        </select>
+        <button class="btn" style="background-color:#f7f9fb;">View Details</button>
+    </form>
+<span><button class="btn" style="background-color:#f7f9fb;" onclick="window.location.href='{{ url_for( 'visitor' ) }}';">Back</button></span>
+</div>
+
+
+{% endblock %}

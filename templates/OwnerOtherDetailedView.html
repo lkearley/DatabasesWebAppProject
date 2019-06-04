@@ -1,0 +1,48 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %} Owner Other Detailed View {% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Owner Other Detailed View </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-static-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h1 align="center">{{ propertyInfo[1] }} Details</h1>
+    <div class="container" align="center" style="text-align: left; width: 375px">
+        <label>Name: {{ propertyInfo[1] }}</label><br>
+        <label>Owner: {{ propertyInfo[12] }}</label><br>
+        <label>Owner Email: {{ ownerEmail[0] }}</label><br>
+        <label>Visits: {{ propertyInfo[10] }}</label><br>
+        <label>Street: {{ propertyInfo[5] }}</label><br>
+        <label>City: {{ propertyInfo[6] }}</label><br>
+        <label>Zip: {{ propertyInfo[7] }}</label><br>
+        <label>Size (acres): {{ propertyInfo[2] }}</label><br>
+        <label>Avg. Rating: {{ propertyInfo[11] }}</label><br>
+        <label>Type: {{ propertyInfo[13] }}</label><br>
+        <label>Public: {{ propertyInfo[4] }}</label><br>
+        <label>Commercial: {{ propertyInfo[3] }}</label><br>
+        <label>ID: 0000{{ propertyInfo[0] }}</label><br>
+        <label for="organisms">Property Organisms:</label>
+        <ul name="organisms">
+            {% for organism in organisms %}
+                <li>{{ organism[0] }}</li>
+            {% endfor %}
+        </ul>
+        <form action="/ownerOther">
+            <button class="btn" align="center">Back</button>
+        </form>
+    </div>
+{% endblock %}

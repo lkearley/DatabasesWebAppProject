@@ -1,0 +1,202 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Add New Property{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add New Property</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {{ super() }}
+
+    <form action="" method="post">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-md-offset-4">
+                <h1>Add New Property</h1>
+            </div>
+        </div>
+
+        <div class="row">
+            {{ form.hidden_tag() }}
+
+            <div class="col-md-3 col-md-offset-2 text-right" style="font-weight:bold">
+                <span class="gone">{{ form.stringDummy }}</span> {{ form.propertyName.label }}<br>
+                <span class="gone">{{ form.stringDummy }}</span> {{ form.streetAddress.label }}<br>
+                <span class="gone">{{ form.stringDummy }}</span>  {{ form.city.label }}<br>
+                <span class="gone">{{ form.stringDummy }}</span>  {{ form.zip.label }}<br>
+                <span class="gone">{{ form.stringDummy }}</span>  {{ form.acres.label }}<br>
+                <span class="gone">{{ form.selectDummy }}</span>  {{ form.public.label }}<br>
+                <span class="gone">{{ form.selectDummy }}</span>  {{ form.commercial.label }}<br>
+                <span class="gone">{{ form.selectDummy }}</span>  {{ form.propertyType.label }}<br>
+                <div id="animal_label">{{ form.animal.label }}</div>
+                <div id="crop_label">{{ form.crop.label }}</div>
+                <div id="vegetable_label">{{ form.vegetable.label }}</div>
+                <div id="flower_label">{{ form.flower.label }}</div>
+                <div id="fruit_label">{{ form.fruit.label }}</div>
+                <div id="nut_label">{{ form.nut.label }}</div>
+            </div>
+            <div class="col-md-3">
+                {{ form.propertyName }} <span class="gone">{{ form.propertyName.label }}</span><br>
+                {{ form.streetAddress }} <span class="gone">{{ form.streetAddress.label }}</span><br>
+                {{ form.city }} <span class="gone">{{ form.city.label }}</span><br>
+                {{ form.zip }} <span class="gone">{{ form.zip.label }}</span><br>
+                {{ form.acres }} <span class="gone">{{ form.acres.label }}</span><br>
+                {{ form.public }} <span class="gone">{{ form.public.label }}</span><br>
+                {{ form.commercial }} <span class="gone">{{ form.commercial.label }}</span><br>
+                {{ form.propertyType }} <span class="gone">{{ form.propertyType.label }}</span><br>
+                <div id="animal" style="padding-bottom: 5px">{{ form.animal }}</div>
+                <div id="crop" style="padding-bottom: 5px">{{ form.crop }}</div>
+                <div id="vegetable" style="padding-bottom: 5px">{{ form.vegetable }}</div>
+                <div id="flower" style="padding-bottom: 5px">{{ form.flower }}</div>
+                <div id="fruit" style="padding-bottom: 5px">{{ form.fruit }}</div>
+                <div id="nut" style="padding-bottom: 5px">{{ form.nut }}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-md-offset-4">
+                <br><br>
+                {{ wtf.form_field(form.submit) }}
+                <br><br>
+                <div class="alert alert-danger">
+                    <strong>Error!</strong> {{ errors[0] }}
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+{% if cancelButton == True %}
+                    <form action="/owner/">
+                        <button class="btn btn-default">Cancel</button>
+                    </form>
+                {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        jQuery(document).ready(function() {
+            var dropdown = {
+                animal: $('#animal'),
+                crop: $('#crop'),
+                vegetable: $('#vegetable'),
+                flower: $('#flower'),
+                fruit: $('#fruit'),
+                nut: $('#nut')
+            };
+             var label = {
+                animal: $('#animal_label'),
+                crop: $('#crop_label'),
+                vegetable: $('#vegetable_label'),
+                flower: $('#flower_label'),
+                fruit: $('#fruit_label'),
+                nut: $('#nut_label')
+            };
+            switch($('#propertyType').val()) {
+                case 'FARM':
+                    dropdown.animal.show();
+                    dropdown.crop.show();
+                    dropdown.vegetable.hide();
+                    dropdown.flower.hide();
+                    dropdown.fruit.hide();
+                    dropdown.nut.hide();
+                    label.animal.show();
+                    label.crop.show();
+                    label.vegetable.hide();
+                    label.flower.hide();
+                    label.fruit.hide();
+                    label.nut.hide();
+                    break;
+                case 'GARDEN':
+                    dropdown.flower.show();
+                    dropdown.vegetable.show();
+                    dropdown.animal.hide();
+                    dropdown.crop.hide();
+                    dropdown.fruit.hide();
+                    dropdown.nut.hide();
+                    label.flower.show();
+                    label.vegetable.show();
+                    label.animal.hide();
+                    label.crop.hide();
+                    label.fruit.hide();
+                    label.nut.hide();
+                    break;
+                case 'ORCHARD':
+                    dropdown.fruit.show();
+                    dropdown.nut.show();
+                    dropdown.animal.hide();
+                    dropdown.crop.hide();
+                    dropdown.vegetable.hide();
+                    dropdown.flower.hide();
+                    label.fruit.show();
+                    label.nut.show();
+                    label.animal.hide();
+                    label.crop.hide();
+                    label.vegetable.hide();
+                    label.flower.hide();
+                    break;
+            }
+            $('#propertyType').change(function() {
+                var propertyType = this.value;
+                switch(propertyType) {
+                    case 'FARM':
+                        dropdown.animal.show();
+                        dropdown.crop.show();
+                        dropdown.vegetable.hide();
+                        dropdown.flower.hide();
+                        dropdown.fruit.hide();
+                        dropdown.nut.hide();
+                        label.animal.show();
+                        label.crop.show();
+                        label.vegetable.hide();
+                        label.flower.hide();
+                        label.fruit.hide();
+                        label.nut.hide();
+                        break;
+                    case 'GARDEN':
+                        dropdown.flower.show();
+                        dropdown.vegetable.show();
+                        dropdown.animal.hide();
+                        dropdown.crop.hide();
+                        dropdown.fruit.hide();
+                        dropdown.nut.hide();
+                        label.flower.show();
+                        label.vegetable.show();
+                        label.animal.hide();
+                        label.crop.hide();
+                        label.fruit.hide();
+                        label.nut.hide();
+                        break;
+                    case 'ORCHARD':
+                        dropdown.fruit.show();
+                        dropdown.nut.show();
+                        dropdown.animal.hide();
+                        dropdown.crop.hide();
+                        dropdown.vegetable.hide();
+                        dropdown.flower.hide();
+                        label.fruit.show();
+                        label.nut.show();
+                        label.animal.hide();
+                        label.crop.hide();
+                        label.vegetable.hide();
+                        label.flower.hide();
+                        break;
+                }
+            });
+        });
+    </script>
+{% endblock %}

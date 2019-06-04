@@ -1,0 +1,81 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Unconfirmed Properties{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Unconfirmed Properties </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h3 align="center" style="color:red;">{{ error }}</h3>
+    <h1 align="center" style="margin-top:150px;">All Unconfirmed Properties</h1>
+    <table border="1" id="admin-visitor-list">
+        <th width="15%">Name <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortUnconfirmedASC', Param="Name" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortUnconfirmedDESC', Param="Name" ) }}';">▼</button></th>
+        <th width="15%">Street</th>
+        <th width="10%">City</th>
+        <th width="10%">Zip</th>
+        <th width="5%">Size <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortUnconfirmedASC', Param="Size" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortUnconfirmedDESC', Param="Size" ) }}';">▼</button></th>
+        <th width="10%">Type</th>
+        <th width="3%">Public</th>
+        <th width="3%">Commercial</th>
+        <th width="5%">ID</th>
+        <th width="10%">Owner <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortUnconfirmedASC', Param="Owner" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortUnconfirmedDESC', Param="Owner" ) }}';">▼</button></th>
+        {% for row in data %}
+            <tr>
+                <td width="15%" align="center">{{row[0]}}</td>
+                <td width="15%" align="center">{{row[1]}}</td>
+                <td width="10%" align="center">{{row[2]}}</td>
+                <td width="10%" align="center">{{row[3]}}</td>
+                <td width="5%" align="center">{{row[4]}}</td>
+                <td width="10%" align="center">{{row[5]}}</td>
+                <td width="3%" align="center">{{row[6]}}</td>
+                <td width="3%" align="center">{{row[7]}}</td>
+                <td width="5%" align="center">0000{{row[8]}}</td>
+                <td width="10%" align="center">{{row[9]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="adminContainer">
+        <form class="adminForms" method="POST" action="/searchPropertiesAdminUnconfirmedPropertyList/">
+            <select name="search_by">
+                <option value="Name">Name</option>
+                <option value="Size">Size</option>
+                <option value="Owner">Owner</option>
+            </select>
+                <input type="text" name="search_text">
+            <button class="btn">Search Properties</button>
+        </form>
+        <form class="adminForms" method="POST" action="/adminManageUnconfirmedProperty/">
+            <select name="property_to_manage">
+                {% for property in data %}
+                    <option value="{{ property[8] }}">{{ property[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Manage Property</button>
+        </form>
+        <form class="adminForms" method="POST" action="/deleteUnconfirmedProperty/">
+            <select name="unconfirmed_property_to_delete">
+                {% for property in data %}
+                    <option value="{{ property[8] }}">{{ property[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Delete Property</button>
+        </form>
+        <form class="adminForms" action="/admin/">
+            <button class="btn">Back</button>
+        </form>
+    </div>
+{% endblock %}

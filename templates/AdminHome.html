@@ -1,0 +1,44 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Homepage{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Homepage </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h1 align="center" style="margin-top:150px;">Welcome {{ username }}</h1>
+    <div class="admin-btn-group">
+        <form action="/adminVisitorList">
+            <span><button class="btn btn-primary btn-lg adminHomeButton">View Visitors List</button></span>
+        </form>
+        <form action="/adminOwnersList">
+            <button class="btn btn-primary btn-lg adminHomeButton">View Owners List</button>
+        </form>
+        <form action="/adminConfirmedPropertiesList">
+            <button class="btn btn-primary btn-lg adminHomeButton">View Confirmed Properties List</button>
+        </form>
+        <form action="/adminUnconfirmedPropertiesList">
+            <button class="btn btn-primary btn-lg adminHomeButton">View Unconfirmed Properties List</button>
+        </form>
+        <form action="/adminApprovedOrganismsList">
+            <button class="btn btn-primary btn-lg adminHomeButton">View Approved Animals and Crops</button>
+        </form>
+        <form action="/adminPendingOrganismsList">
+            <button class="btn btn-primary btn-lg adminHomeButton">View Pending Animals and Crops</button>
+        </form>
+    </div>
+{% endblock %}

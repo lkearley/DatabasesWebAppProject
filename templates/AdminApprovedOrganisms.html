@@ -1,0 +1,67 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Approved Organisms{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Approved Organisms </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h3 align="center" style="color:red;">{{ error }}</h3>
+    <h1 align="center">Approved Animals/Crops</h1>
+    <table border="1" id="admin-visitor-list">
+        <th width="15%">Name <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortApprovedASC', Param="Name" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortApprovedDESC', Param="Name" ) }}';">▼</button></th>
+        <th width="15%">Type <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortApprovedASC', Param="CAST(Type AS CHAR)" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortApprovedDESC', Param="CAST(Type AS CHAR)" ) }}';">▼</button></th>
+        {% for row in data %}
+            <tr>
+                <td width="15%" align="center">{{row[0]}}</td>
+                <td width="15%" align="center">{{row[1]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="adminContainer">
+        <form class="adminForms" method="POST" action="/searchApprovedOrganismsAdmin/">
+            <select name="search_by">
+                <option value="Name">Name</option>
+                <option value="Type">Type</option>
+            </select>
+                <input type="text" name="search_text">
+            <button class="btn">Search Approved Organisms</button>
+        </form>
+        <form class="adminForms" method="POST" action="/addApprovedOrganismsAdmin/">
+            <select name="organism_type">
+                <option value="Animal">Animal</option>
+                <option value="Flower">Flower</option>
+                <option value="Fruit">Fruit</option>
+                <option value="Nut">Nut</option>
+                <option value="Vegetable">Vegetable</option>
+            </select>
+                <input type="text" name="organism_name">
+            <button class="btn">Add to Approved List</button>
+        </form>
+        <form class="adminForms" method="POST" action="/deleteApprovedOrganismsAdmin/">
+            <select name="organism_name">
+                {% for organism in data %}
+                    <option value="{{ organism[0] }}">{{ organism[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Delete Organism by Name</button>
+        </form>
+        <form class="adminForms" action="/admin/">
+            <button class="btn">Back</button>
+        </form>
+    </div>
+{% endblock %}

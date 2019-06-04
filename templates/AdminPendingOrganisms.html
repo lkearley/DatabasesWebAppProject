@@ -1,0 +1,64 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Admin Pending Organisms{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Admin Pending Organisms </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h3 align="center" style="color:red;">{{ error }}</h3>
+    <h1 align="center">Pending Approval Animals/Crops</h1>
+    <table border="1" id="admin-visitor-list">
+        <th width="15%">Name <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortPendingASC', Param="Name" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortPendingDESC', Param="Name" ) }}';">▼</button></th>
+        <th width="15%">Type <button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortPendingASC', Param="CAST(Type AS CHAR)" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'adminSortPendingDESC', Param="CAST(Type AS CHAR)" ) }}';">▼</button></th>
+        {% for row in data %}
+            <tr>
+                <td width="15%" align="center">{{row[0]}}</td>
+                <td width="15%" align="center">{{row[1]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="adminContainer">
+        <form class="adminForms" method="POST" action="/searchPendingOrganismsAdmin/">
+            <select name="search_by">
+                <option value="Name">Name</option>
+                <option value="Type">Type</option>
+            </select>
+            <input type="text" name="search_text">
+            <button class="btn">Search Approved Organisms</button>
+        </form>
+        <form class="adminForms" method="POST" action="/approvePendingOrganismAdmin/">
+            <select name="organism_name">
+                {% for organism in data %}
+                    <option value="{{ organism[0] }}">{{ organism[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Approve Organism by Name</button>
+        </form>
+        <form class="adminForms" method="POST" action="/deletePendingOrganismsAdmin/">
+            <select name="organism_name">
+                {% for organism in data %}
+                    <option value="{{ organism[0] }}">{{ organism[0] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn">Delete Organism by Name</button>
+        </form>
+        <form class="adminForms" action="/admin/">
+            <button class="btn">Back</button>
+        </form>
+    </div>
+{% endblock %}

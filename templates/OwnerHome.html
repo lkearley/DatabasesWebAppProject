@@ -1,0 +1,78 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Owner Homepage{% endblock %}
+
+{% block head %}
+{{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Owner Homepage </title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-fixed-top">
+        <div class="container">
+            <form action="/logout">
+            <span><button class="btn login">Logout</button></span>
+            </form>
+        </div>
+    </nav>
+{% endblock %}
+{% block content %}
+    <h1 align="center">Welcome {{ username }}</h1>
+    <h2 id="yourProperties">Your Properties:</h2>
+<div margin-top="40px" padding-top="65px">
+</div>
+<table margin-top="40px" width="75%" border="0" align="center" cellpadding="5" cellspacing="0" style="border:2px solid #140012;">
+<tr style="background-color:#8fc1e3;">
+    <th style="text-align:center;">Name<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByASC', Param="Name" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByDESC', Param="Name"  ) }}';">▼</button></th>
+    <th style="text-align:center;">ID</th>
+    <th style="text-align:center;">Size</th>
+    <th style="text-align:center;">Commercial</th>
+    <th style="text-align:center;">Public</th>
+    <th style="text-align:center;">Address</th>
+    <th style="text-align:center;"> City<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByASC', Param="City" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByDESC', Param="City" ) }}';">▼</button></th>
+    <th style="text-align:center;">Zip</th>
+    <th style="text-align:center;">Type<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByASC', Param="PropertyType" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByDESC', Param="PropertyType"  ) }}';">▼</button></th>
+    <th style="text-align:center;">IsValid</th>
+    <th style="text-align:center;">Visits<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByASC', Param="COALESCE(Visits, 0)"  ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByDESC', Param="COALESCE(Visits, 0)"  ) }}';">▼</button></th>
+    <th style="text-align:center;">Avg Rating<button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByASC', Param="COALESCE(Rating, 0)" ) }}';">▲</button><button style="background-color:#8fc1e3;" onclick="window.location.href='{{ url_for( 'ownerSortByDESC', Param="COALESCE(Rating, 0)" ) }}';">▼</button></th>
+</tr>
+    {% for row in data %}
+        <tr style="text-align:center;background-color:#f7f9fb;">
+        <td>{{row[1]}}</td>
+        <td>0000{{row[0]}}</td>
+        <td>{{row[2]}}</td>
+        <td>{{True if row[3] else False}}</td>
+        <td>{{True if row[4] else False}}</td>
+        <td>{{row[5]}}</td>
+        <td>{{row[6]}}</td>
+        <td>{{row[7]}}</td>
+        <td>{{row[8]}}</td>
+        <td>{{True if row[9] != None else False}}</td>
+        <td>{{row[10]}}</td>
+        <td>{{row[11] if row[11] != None else 0}}</td>
+        </tr>
+    {% endfor %}
+</table>
+<div class="container" align="center">
+    <form method="POST" action="/searchOwnerPropertyList/">
+        <select name="searchBy">
+            <option value="Name">Name</option>
+            <option value="City">City</option>
+            <option value="PropertyType">Type</option>
+            <option value="COALESCE (Visits, 0)">Visits</option>
+            <option value="COALESCE (Rating, 0)">Avg Rating</option>
+        </select>
+            <input type="text" name="searchText">
+        <button class="btn" style="background-color:#f7f9fb;">Search Properties</button>
+    </form>
+    <form class="adminForms" action="/addproperty/">
+        <button class="btn" style="background-color:#f7f9fb;">Add Property</button>
+    </form>
+    <form class="adminForms" action="/ownerManageProperties/">
+        <button class="btn" style="background-color:#f7f9fb;">Manage Your Properties</button>
+    </form>
+        <button class="btn" style="background-color:#f7f9fb;" onclick="window.location.href='{{ url_for( 'ownerOther' ) }}';">Other  Properties</button>
+</div>
+{% endblock %}
